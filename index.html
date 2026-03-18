@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>Photolina – Free Image Editor</title>
+  <link rel="manifest" href="manifest.json">
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-wrap">
+    <!-- Left panel: app info + tips -->
+    <aside class="download-panel" id="left-panel">
+      <button type="button" class="panel-close-btn" id="left-panel-close" title="Close panel" aria-label="Close left panel">◀</button>
+      <div class="download-content">
+        <img src="assets/logo.png" alt="Photolina" class="logo-sidebar">
+        <h2>Photolina</h2>
+        <p class="tagline tagline-soon">The App coming soon</p>
+        <p class="prototype-note">Also updates and other better features. For now this serves as a prototype.</p>
+        <div class="tips-wrap">
+          <h3 class="tips-title">Tips</h3>
+          <div class="tips-scroll">
+            <ul class="tips-list">
+              <li><strong>Cursor</strong> (↖): navigate and select only — use when you don’t want to draw or edit.</li>
+              <li>To <strong>remove</strong> areas: use <strong>Remove BG</strong> (header), the <strong>Eraser</strong> (🧹), <strong>Fill</strong> (🪣) with a color, or <strong>Fill transparent</strong> (▢) to make same-color regions transparent.</li>
+              <li><strong>Magic restore</strong> (🪄): if Remove BG or the eraser removed something you wanted to keep, select this tool and paint over that area to bring it back.</li>
+              <li>Use <strong>Select</strong> to draw a selection, then <strong>Copy selection as layer</strong> or <strong>Crop image to selection</strong>.</li>
+              <li>Select the <strong>Move</strong> tool (✥) to drag any layer — including selection layers — to reposition it.</li>
+              <li>Click <strong>Layers</strong> to expand the list. The first layer is <strong>Original</strong>; others are numbered.</li>
+              <li>Use <strong>Upload as layer</strong> to add another image on top of your canvas.</li>
+              <li>Add text with the <strong>Text</strong> tool: click to place a box, resize or move it, then click <strong>Apply text</strong>.</li>
+              <li>Use <strong>Undo</strong> and <strong>Forward</strong> in the header to step back or redo changes.</li>
+              <li>No login required — use the editor in your browser, free.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main editor -->
+    <main class="editor-main">
+      <header class="app-header">
+        <a href="#" class="logo" title="Photolina">
+          <img src="assets/logo.png" alt="Photolina" class="logo-img">
+        </a>
+        <button type="button" class="open-image-btn open-image-btn-secondary panel-toggle-btn" id="header-toggle-left" title="Show or hide info &amp; tips" aria-label="Toggle left panel">☰ Info</button>
+        <button type="button" class="open-image-btn open-image-btn-secondary panel-toggle-btn" id="header-toggle-right" title="Show or hide tools &amp; options" aria-label="Toggle right panel">Tools ▶</button>
+        <div class="header-actions">
+          <label for="file-input" class="open-image-btn" title="Upload / open image">Open</label>
+          <button type="button" class="open-image-btn open-image-btn-secondary" id="header-new-btn" title="New document">New</button>
+          <div class="header-save-group">
+            <button type="button" class="open-image-btn open-image-btn-secondary" id="header-save-btn" title="Save as PNG">Save</button>
+            <button type="button" class="open-image-btn open-image-btn-secondary" id="header-export-btn" title="Export">Export ▾</button>
+            <div class="export-menu" id="export-menu">
+              <button type="button" data-export="png">PNG</button>
+              <button type="button" data-export="jpg">JPEG</button>
+            </div>
+          </div>
+          <button type="button" class="open-image-btn open-image-btn-secondary" id="header-remove-bg-btn" title="Remove background">Remove BG</button>
+          <button type="button" class="open-image-btn open-image-btn-secondary" id="header-magic-restore-btn" title="Switch to Magic restore tool — paint back areas removed by Remove BG">🪄 Restore</button>
+          <button type="button" class="open-image-btn open-image-btn-secondary" id="header-undo-btn" title="Undo">Undo</button>
+          <button type="button" class="open-image-btn open-image-btn-secondary" id="header-redo-btn" title="Forward / Redo">Forward</button>
+        </div>
+        <input type="file" id="file-input" accept="image/*">
+      </header>
+
+      <div class="workspace">
+        <div class="toolbar">
+          <button class="tool-btn active" data-tool="cursor" title="Cursor — navigate and select only">↖</button>
+          <button class="tool-btn" data-tool="brush" title="Brush">🖌</button>
+          <button class="tool-btn" data-tool="eraser" title="Eraser">🧹</button>
+          <button class="tool-btn" data-tool="fill" title="Fill with color">🪣</button>
+          <button class="tool-btn" data-tool="filltransparent" title="Fill with transparent / remove color">▢</button>
+          <button class="tool-btn" data-tool="magicrestore" title="Restore areas removed by Remove BG or eraser">🪄</button>
+          <button class="tool-btn" data-tool="eyedropper" title="Pick color from image">💧</button>
+          <button class="tool-btn" data-tool="rect" title="Rectangle">▢</button>
+          <button class="tool-btn" data-tool="ellipse" title="Ellipse">○</button>
+          <button class="tool-btn" data-tool="line" title="Line">∕</button>
+          <button class="tool-btn" data-tool="text" title="Text">T</button>
+          <button class="tool-btn" data-tool="move" title="Move layer">✥</button>
+          <button class="tool-btn" data-tool="select" title="Select">⬚</button>
+          <button class="tool-btn" data-tool="crop" title="Crop">✂</button>
+        </div>
+
+        <div class="canvas-wrap" id="canvas-wrap">
+          <div class="welcome-state" id="welcome-state">
+            <p>Open an image to edit, or start with a new document.</p>
+            <div class="welcome-buttons">
+              <label for="file-input" class="btn-welcome btn-welcome-primary">📂 Open image</label>
+              <button type="button" class="btn-welcome btn-welcome-secondary" id="btn-welcome-new">New document</button>
+            </div>
+          </div>
+          <div class="canvas-container" id="canvas-container">
+            <canvas id="main-canvas"></canvas>
+            <canvas id="selection-canvas"></canvas>
+          </div>
+        </div>
+
+        <div class="right-panels" id="right-panel">
+          <button type="button" class="panel-close-btn panel-close-right" id="right-panel-close" title="Close panel" aria-label="Close right panel">▶</button>
+          <div class="panel-scroll">
+          <div class="panel image-panel">
+            <h3>Image</h3>
+            <div class="prop-group">
+              <label>Resize (px)</label>
+              <div class="resize-row">
+                <input type="number" id="resize-width" min="1" max="8000" placeholder="W">
+                <span>×</span>
+                <input type="number" id="resize-height" min="1" max="8000" placeholder="H">
+              </div>
+              <button type="button" class="option-btn option-btn-block" id="btn-resize">Apply resize</button>
+            </div>
+            <div class="prop-group">
+              <label>Selection / Crop</label>
+              <button type="button" class="option-btn option-btn-block" id="btn-copy-selection" title="Copy selection as new layer">Copy selection as layer</button>
+              <button type="button" class="option-btn option-btn-block" id="btn-crop-to-selection" title="Crop image to selection">Crop image to selection</button>
+              <button type="button" class="option-btn option-btn-block" id="btn-clear-selection" title="Clear selection">Clear selection</button>
+            </div>
+            <div class="prop-group">
+              <label>Pixelate</label>
+              <p class="quality-info" id="quality-info">—</p>
+              <label class="inline-label">Block size (px)</label>
+              <input type="range" id="pixelate-size" min="1" max="40" value="4" title="Larger = more pixelated">
+              <span id="pixelate-size-value">4</span>
+              <button type="button" class="option-btn option-btn-block" id="btn-apply-pixelate">Apply pixelate</button>
+              <p class="prop-hint">Use Undo to revert.</p>
+            </div>
+            <div class="option-buttons">
+              <button type="button" class="option-btn" id="btn-brightness" title="Brightness & Contrast">Brightness</button>
+              <button type="button" class="option-btn" id="btn-saturation" title="Hue & Saturation">Saturation</button>
+              <button type="button" class="option-btn" id="btn-invert">Invert</button>
+              <button type="button" class="option-btn" id="btn-grayscale">Grayscale</button>
+              <button type="button" class="option-btn" id="btn-blur" title="Blur">Blur</button>
+              <button type="button" class="option-btn" id="btn-flip-h">Flip H</button>
+              <button type="button" class="option-btn" id="btn-flip-v">Flip V</button>
+            </div>
+          </div>
+          <div class="panel layers-panel" id="layers-panel">
+            <h3 class="panel-toggle" id="layers-panel-toggle" title="Show or hide layers">Layers <span class="toggle-icon" aria-hidden="true">▼</span></h3>
+            <div class="panel-body layers-panel-body">
+            <div class="layer-list" id="layer-list"></div>
+            <div class="panel-actions">
+              <button id="btn-new-layer" title="New layer">+</button>
+              <button id="btn-duplicate-layer" title="Duplicate layer">⧉</button>
+              <button id="btn-merge-layer" title="Merge down">↓</button>
+              <button id="btn-delete-layer" title="Delete layer">−</button>
+            </div>
+            <label for="layer-upload-input" class="option-btn option-btn-block" style="margin-top:0.5rem;display:block;text-align:center;cursor:pointer" title="Add an image as a new layer">Upload as layer</label>
+            <input type="file" id="layer-upload-input" accept="image/*" style="position:absolute;width:0;height:0;opacity:0">
+            </div>
+          </div>
+          <div class="panel properties-panel">
+            <h3>Color &amp; brush</h3>
+            <div class="prop-group">
+              <label>Brush color</label>
+              <div class="color-row">
+                <input type="color" id="stroke-color" value="#059669" title="Choose color">
+                <input type="text" id="stroke-color-hex" value="#059669" maxlength="7" placeholder="#059669">
+              </div>
+              <p class="color-hint">Use <strong>💧 Eyedropper</strong> and click on the image to pick a color.</p>
+            </div>
+            <div class="prop-group color-swatches">
+              <label>Presets</label>
+              <div class="swatches" id="color-swatches"></div>
+            </div>
+            <div class="prop-group">
+              <label>Fill tolerance</label>
+              <input type="range" id="fill-tolerance" min="0" max="120" value="40" title="Similarity for bucket fill">
+              <span id="fill-tolerance-value">40</span>
+            </div>
+            <div class="prop-group">
+              <label>Brush size</label>
+              <input type="range" id="brush-size" min="1" max="100" value="10">
+              <span id="brush-size-value">10</span>
+            </div>
+            <div class="prop-group">
+              <label>Brush hardness</label>
+              <input type="range" id="brush-hardness" min="0" max="100" value="100" title="100 = hard edge, 0 = soft">
+              <span id="brush-hardness-value">100%</span>
+            </div>
+            <div class="prop-group">
+              <label>Opacity</label>
+              <input type="range" id="opacity" min="1" max="100" value="100">
+              <span id="opacity-value">100%</span>
+            </div>
+            <div class="prop-group" id="text-input-group" style="display:none">
+              <label>Text</label>
+              <input type="text" id="text-input" placeholder="Type here">
+              <label class="inline-label">Font</label>
+              <select id="text-font">
+                <option value="Outfit, sans-serif">Outfit</option>
+                <option value="JetBrains Mono, monospace">JetBrains Mono</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="Times New Roman, serif">Times New Roman</option>
+              </select>
+              <label class="inline-label">Size</label>
+              <input type="number" id="text-size" value="24" min="8" max="200" placeholder="Size">
+              <label class="inline-label">Color</label>
+              <input type="color" id="text-color" value="#059669" title="Text color">
+              <button type="button" class="option-btn option-btn-block" id="btn-apply-text" title="Apply text to layer">Apply text</button>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="status-bar">
+        <div class="status-left">
+          <span id="status-coords">0, 0</span>
+          <span id="status-size">—</span>
+          <span id="status-zoom">100%</span>
+        </div>
+        <div class="zoom-controls">
+          <button id="zoom-out">−</button>
+          <input type="range" id="zoom-slider" min="25" max="400" value="100">
+          <button id="zoom-in">+</button>
+        </div>
+        <div class="footer-credits">
+          <a href="https://gazolina99.github.io/Gazolina/" target="_blank" rel="noopener noreferrer" title="Gazolina — Gazmir Cepele">
+            <img src="assets/gazolina-logo.png" alt="Gazolina" class="gazolina-logo">
+          </a>
+          <span class="credits-by">Developed by Gazolina, Gazmir Cepele</span>
+          <span class="credits-app">Photolina · Free image editor</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal" id="new-doc-modal">
+    <div class="modal-content">
+      <h3>New document</h3>
+      <div class="form-group">
+        <label>Width</label>
+        <input type="number" id="new-width" value="800" min="1" max="8000">
+      </div>
+      <div class="form-group">
+        <label>Height</label>
+        <input type="number" id="new-height" value="600" min="1" max="8000">
+      </div>
+      <button class="btn-primary" id="btn-create-doc">Create</button>
+      <button class="btn-secondary" id="btn-cancel-new">Cancel</button>
+    </div>
+  </div>
+
+  <div class="modal" id="adjust-modal">
+    <div class="modal-content">
+      <h3 id="adjust-modal-title">Adjustments</h3>
+      <div class="form-group">
+        <label id="adjust-label-1">Value</label>
+        <input type="range" id="adjust-slider-1" min="0" max="200" value="100">
+        <span id="adjust-value-1">100</span>
+      </div>
+      <div class="form-group" id="adjust-group-2" style="display:none">
+        <label id="adjust-label-2">Value 2</label>
+        <input type="range" id="adjust-slider-2" min="0" max="200" value="100">
+        <span id="adjust-value-2">100</span>
+      </div>
+      <button class="btn-primary" id="btn-apply-adjust">Apply</button>
+      <button class="btn-secondary" id="btn-cancel-adjust">Cancel</button>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
